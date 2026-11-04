@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro';
+import { allRecipes, stepCount } from '../lib/recipes';
+import { url } from '../lib/url';
+
+const recipes = await allRecipes();
+const categories = [...new Set(recipes.map((r) => r.data.category))].sort();
+const osShort = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
+---
+
+<Base
+  title="ShellRecipes"
+  description="Step-by-step terminal command recipes for real-world tasks, for Linux, macOS Terminal and Windows Terminal."
+>
+  <section class="hero">
+    <p class="hero-kicker">$ shellrecipes --for linux,macos,windows</p>
+    <h1>Terminal recipes for the jobs you actually need to do.</h1>
+    <p class="lead">
+      Pick a task, choose your OS, fill in your own values, and follow the steps. Every command has a copy
+      button, and every recipe links to the official docs it was checked against.
+    </p>
+  </section>
+
+  <div class="search-row">
+    <label class="search">
+      <span class="prompt" aria-hidden="true">❯</span>
+      <input
+        id="q"
+        type="search"
+        placeholder="Search recipes: android, ssh, docker, port…"
+        autocomplete="off"
+        aria-label="Search recipes"
+      />
+      <kbd>/</kbd>
+    </label>
+    <div class="chips" role="group" aria-label="Filter by category">
+      <button class="chip" type="button" data-cat="" aria-pressed="true">All</button>
+      {categories.map((c) => <button class="chip" type="button" data-cat={c} aria-pressed="false">{c}</button>)}
+    </div>
+  </div>
+
+  <p class="result-count" id="count">{recipes.length} recipes</p>
+
+  <div class="grid" id="grid">
+    {
+      recipes.map((r) => {
+        const steps = stepCount(r);
+        const haystack = [r.data.title, r.data.summary, r.data.category, ...r.data.tags].join(' ').toLowerCase();
+        return (
+          <a class="card" href={url(`r/${r.id}/`)} data-cat={r.data.category} data-text={haystack} data-id={r.id} data-steps={steps}>
+            <span class="card-cat">{r.data.category}</span>
+            <h2>{r.data.title}</h2>
+            <p>{r.data.summary}</p>
+            <span class="card-meta">
+              <span>{steps} steps</span>
+              <span>{r.data.time}</span>
+              <span>{r.data.difficulty}</span>
+              <span>{r.data.os.map((o) => osShort[o]).join(' · ')}</span>
+              <span class="card-progress" hidden></span>
+            </span>
+          </a>
+        );
+      })
+    }
+  </div>
+  <p class="empty" id="empty" hidden>
+    No recipe matches that yet. <a href={url('contribute/')}>Add one</a>. Each recipe is a single Markdown file.
+  </p>
+
+  <section class="how" aria-label="How it works">
+    <div><strong>1 · Choose your OS</strong><span>Linux, macOS or Windows. The switch at the top changes every command on the page.</span></div>
+    <div><strong>2 · Fill in your values</strong><span>Type your IP, port or device name once, and every command updates.</span></div>
+    <div><strong>3 · Copy, run, tick</strong><span>Copy each command, compare with the expected output, and tick the step off.</span></div>
+    <div><strong>4 · Check the source</strong><span>Each recipe lists the official docs and the date its commands were checked.</span></div>
+  </section>
+</Base>
+
+<script>
+  const q = document.getElementById('q') as HTMLInputElement;
+  const cards = [...document.querySelectorAll<HTMLAnchorElement>('.card')];
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+  const count = document.getElementById('count')!;
+  const empty = document.getElementById('empty')!;
+  let cat = '';
+
+  const apply = () => {
+    const terms = q.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    for (const c of cards) {
+      const ok =
+        (!cat || c.dataset.cat === cat) && terms.every((t) => (c.dataset.text ?? '').includes(t));
+      c.hidden = !ok;
+      if (ok) shown++;
+    }
+    count.textContent = `${shown} recipe${shown === 1 ? '' : 's'}`;
+    empty.hidden = shown > 0;
+  };
+
+  q.addEventListener('input', apply);
+  chips.forEach((chip) =>
+    chip.addEventListener('click', () => {
+      cat = chip.dataset.cat ?? '';
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      apply();
+    }),
+  );
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== q) {
+      e.preventDefault();
+      q.focus();
+    } else if (e.key === 'Escape' && document.activeElement === q) {
+      q.value = '';
+      apply();
+    }
+  });
+  const fromUrl = new URLSearchParams(location.search).get('q');
+  if (fromUrl) {
+    q.value = fromUrl;
+    apply();
+  }
+
+  // Show saved progress on each card.
+  for (const c of cards) {
+    try {
+      const done = JSON.parse(localStorage.getItem(`sr:progress:${c.dataset.id}`) ?? '[]') as string[];
+      const total = Number(c.dataset.steps);
+      const el = c.querySelector<HTMLElement>('.card-progress')!;
+      if (done.length) {
+        el.textContent = done.length >= total ? '✓ completed' : `${done.length}/${total} done`;
+        el.hidden = false;
+      }
+    } catch {
+      /* storage unavailable */
+    }
+  }
+</script>
+
+<style>
+  .card[hidden] { display: none; }
+</style>

@@ -1,0 +1,240 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { allRecipes, formatDate, stepCount, type Recipe } from '../../lib/recipes';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const recipes = await allRecipes();
+  return recipes.map((recipe) => ({ params: { id: recipe.id }, props: { recipe } }));
+}
+
+const { recipe } = Astro.props as { recipe: Recipe };
+const { data } = recipe;
+const { Content, headings } = await render(recipe);
+const EXTRA = /^(troubleshooting|next steps|clean ?up|going further|undo)/i;
+const steps = headings.filter((h) => h.depth === 2 && !EXTRA.test(h.text));
+const extras = headings.filter((h) => h.depth === 2 && EXTRA.test(h.text));
+const total = stepCount(recipe);
+const osNames = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
+---
+
+<Base title={data.title} description={data.summary}>
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href={url()}>~/recipes</a> / <a href={url(`?q=${encodeURIComponent(data.category.toLowerCase())}`)}>{data.category.toLowerCase()}</a>
+  </nav>
+
+  <header class="recipe-header">
+    <h1>{data.title}</h1>
+    <p class="lead">{data.summary}</p>
+    <div class="meta">
+      <span class="pill">{total} steps</span>
+      <span class="pill">⏱ {data.time}</span>
+      <span class="pill">{data.difficulty}</span>
+      <span class="pill">{data.os.map((o) => osNames[o]).join(' · ')}</span>
+      <span class="pill ok" title="Date the commands were checked against the sources below">✓ Verified {formatDate(data.verified)}</span>
+    </div>
+  </header>
+
+  <div class="recipe-layout" data-recipe={recipe.id} data-total={total} data-supported={data.os.join(' ')}>
+    <aside class="recipe-aside">
+      <div class="panel">
+        <h3>Progress</h3>
+        <div class="progress-bar" aria-hidden="true"><span id="bar"></span></div>
+        <div class="progress-text">
+          <span id="progress-label" aria-live="polite">0 of {total} steps done</span>
+          <button class="link-btn" type="button" id="reset-progress">Reset</button>
+        </div>
+        <details class="toc-details" open id="toc-details">
+        <summary>Show all steps</summary>
+        <ol class="toc">
+          {
+            steps.map((h, i) => (
+              <li data-step={i + 1}>
+                <a href={`#step-${i + 1}`}>
+                  <span class="n">{i + 1}</span>
+                  <span>{h.text}</span>
+                </a>
+              </li>
+            ))
+          }
+          {
+            extras.map((h) => (
+              <li>
+                <a href={`#${h.slug}`}>
+                  <span class="n">?</span>
+                  <span>{h.text}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+        </details>
+      </div>
+
+      {
+        data.variables.length > 0 && (
+          <div class="panel">
+            <details open id="vars-details">
+              <summary>
+                <h3>Your values</h3>
+              </summary>
+              <p style="margin:8px 0 0;font-size:.84rem;color:var(--muted)">
+                Type your own values and every command on the page updates.
+              </p>
+              <div class="vars">
+                {data.variables.map((v) => (
+                  <label>
+                    {v.label}
+                    <input type="text" data-var-input={v.key} value={v.default} data-default={v.default} spellcheck="false" autocomplete="off" />
+                    {v.hint && <span class="hint">{v.hint}</span>}
+                  </label>
+                ))}
+              </div>
+              <div class="progress-text">
+                <span />
+                <button class="link-btn" type="button" id="reset-vars">Reset values</button>
+              </div>
+            </details>
+          </div>
+        )
+      }
+
+      {
+        data.prerequisites.length > 0 && (
+          <div class="panel">
+            <h3>Before you start</h3>
+            <ul class="prereq">
+              {data.prerequisites.map((p) => (
+                <li set:html={p} />
+              ))}
+            </ul>
+          </div>
+        )
+      }
+    </aside>
+
+    <article class="recipe-body">
+      <p class="os-banner">
+        Showing commands for <strong id="os-name"></strong> <span aria-hidden="true">·</span> <span class="shell"></span>
+        <span class="unsupported" id="unsupported">This recipe doesn't cover this OS yet.</span>
+      </p>
+      <Content />
+
+      <section class="sources" aria-labelledby="sources-h">
+        <h2 id="sources-h">Sources</h2>
+        <p>Commands checked against these official sources on <strong>{formatDate(data.verified)}</strong>. Found something out of date? <a href="https://github.com/AimxnAsyraf/shell-recipes/issues">Open an issue</a>.</p>
+        <ol>
+          {
+            data.sources.map((s) => (
+              <li>
+                <a href={s.url} rel="noopener">{s.title}</a>{' '}
+                <span class="src-meta">
+                  · {s.publisher}
+                  {s.date && ` · ${s.date}`}
+                </span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<script>
+  const layout = document.querySelector<HTMLElement>('.recipe-layout')!;
+  const id = layout.dataset.recipe!;
+  const total = Number(layout.dataset.total);
+  const supported = (layout.dataset.supported ?? '').split(' ');
+  const PKEY = `sr:progress:${id}`;
+  const VKEY = `sr:vars:${id}`;
+  const read = <T,>(k: string, fallback: T): T => {
+    try {
+      const v = localStorage.getItem(k);
+      return v ? (JSON.parse(v) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  const write = (k: string, v: unknown) => {
+    try {
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  // ----- OS banner -----
+  const osNames: Record<string, string> = { linux: 'Linux', macos: 'macOS', windows: 'Windows' };
+  const syncOs = () => {
+    const os = document.documentElement.dataset.os ?? 'linux';
+    document.getElementById('os-name')!.textContent = osNames[os];
+    document.getElementById('unsupported')!.style.display = supported.includes(os) ? 'none' : 'inline';
+  };
+  document.addEventListener('sr:os', syncOs);
+  syncOs();
+
+  // ----- Step checklist -----
+  const boxes = [...document.querySelectorAll<HTMLInputElement>('.step-done input')];
+  let done = new Set<string>(read<string[]>(PKEY, []));
+  const syncProgress = () => {
+    boxes.forEach((b) => {
+      const n = b.dataset.step!;
+      b.checked = done.has(n);
+      b.closest('.step')?.classList.toggle('is-done', b.checked);
+      document.querySelector(`.toc li[data-step="${n}"]`)?.classList.toggle('done', b.checked);
+    });
+    const count = boxes.filter((b) => b.checked).length;
+    document.getElementById('bar')!.style.width = `${total ? (count / total) * 100 : 0}%`;
+    document.getElementById('progress-label')!.textContent =
+      count >= total && total > 0 ? `All ${total} steps done 🎉` : `${count} of ${total} steps done`;
+  };
+  boxes.forEach((b) =>
+    b.addEventListener('change', () => {
+      if (b.checked) done.add(b.dataset.step!);
+      else done.delete(b.dataset.step!);
+      write(PKEY, [...done]);
+      syncProgress();
+    }),
+  );
+  document.getElementById('reset-progress')?.addEventListener('click', () => {
+    done = new Set();
+    write(PKEY, []);
+    syncProgress();
+  });
+  syncProgress();
+
+  // ----- Fill-in variables -----
+  const inputs = [...document.querySelectorAll<HTMLInputElement>('[data-var-input]')];
+  const saved = read<Record<string, string>>(VKEY, {});
+  const applyVar = (key: string, value: string, fallback: string) => {
+    const shown = value.trim() === '' ? fallback : value;
+    document.querySelectorAll<HTMLElement>(`.var[data-var="${key}"]`).forEach((el) => {
+      el.textContent = shown;
+    });
+  };
+  inputs.forEach((input) => {
+    const key = input.dataset.varInput!;
+    if (saved[key] !== undefined) input.value = saved[key];
+    applyVar(key, input.value, input.dataset.default!);
+    input.addEventListener('input', () => {
+      saved[key] = input.value;
+      write(VKEY, saved);
+      applyVar(key, input.value, input.dataset.default!);
+    });
+  });
+  document.getElementById('reset-vars')?.addEventListener('click', () => {
+    inputs.forEach((input) => {
+      input.value = input.dataset.default!;
+      delete saved[input.dataset.varInput!];
+      applyVar(input.dataset.varInput!, input.value, input.dataset.default!);
+    });
+    write(VKEY, saved);
+  });
+  // Collapse the values panel by default on small screens.
+  if (matchMedia('(max-width: 999px)').matches) {
+    document.getElementById('vars-details')?.removeAttribute('open');
+    document.getElementById('toc-details')?.removeAttribute('open');
+  }
+</script>
