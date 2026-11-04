@@ -37,7 +37,7 @@ Requires **Node.js 22.23.4 or newer** (Astro 7's minimum).
 
 ```bash
 npm install
-npm run dev          # http://localhost:4321/shell-recipes/
+npm run dev          # http://localhost:4321/
 ```
 
 ```bash
@@ -50,14 +50,22 @@ npm run check:recipes  # lint recipe files
 
 Each recipe is one Markdown file in [`src/recipes/`](src/recipes/). See [CONTRIBUTING.md](CONTRIBUTING.md), or the **Add a recipe** page on the site.
 
-## Deploy
+## Deploy (Cloudflare Pages)
 
-`.github/workflows/deploy.yml` builds and deploys to **GitHub Pages** on every push to `main`:
+Cloudflare Pages builds the site from GitHub and redeploys on every push to `main`. Pull requests get their own preview URLs.
 
-1. In the repo, go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
-2. Merge to `main`. The site appears at `https://aimxnasyraf.github.io/shell-recipes/`.
+1. In the Cloudflare dashboard, go to **Workers & Pages → Create → Pages → Connect to Git**, and pick `AimxnAsyraf/shell-recipes`.
+2. Build settings:
+   - **Framework preset:** Astro
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+3. Click **Save and Deploy**. The site goes live at `https://<project-name>.pages.dev` (default project name: `shell-recipes`).
 
-Deploying to a custom domain, Vercel or Netlify instead? Build with `SITE_BASE=/` (and `SITE_URL=https://your.domain`) so links don't include `/shell-recipes`.
+The Node version comes from `.node-version` (Astro 7 needs Node 22.23.4 or newer, which is newer than Cloudflare's default). `public/_headers` sets caching headers, and `src/pages/404.astro` becomes the 404 page.
+
+Using a custom domain or a different project name? Set the `SITE_URL` environment variable in the Pages project (e.g. `https://recipes.example.com`). Serving from a sub-path instead, like GitHub Pages? Build with `SITE_BASE=/shell-recipes`.
+
+GitHub Actions (`.github/workflows/ci.yml`) only checks recipes and runs a test build on pull requests. It doesn't deploy.
 
 ## Tech
 
