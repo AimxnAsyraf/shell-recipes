@@ -1,0 +1,148 @@
+---
+import '../styles/global.css';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const fullTitle = title === 'ShellRecipes' ? title : `${title} · ShellRecipes`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={url('favicon.svg')} />
+    <script is:inline>
+      // Apply saved theme + OS before first paint (no flash).
+      (function () {
+        var d = document.documentElement;
+        var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+        var theme = get('sr:theme');
+        if (theme === 'light' || theme === 'dark') d.setAttribute('data-theme', theme);
+        var os = get('sr:os');
+        if (os !== 'linux' && os !== 'macos' && os !== 'windows') {
+          var p = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || '').toLowerCase();
+          os = p.indexOf('win') > -1 ? 'windows' : (p.indexOf('mac') > -1 || /iphone|ipad/.test(p)) ? 'macos' : 'linux';
+        }
+        d.setAttribute('data-os', os);
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href={url()} aria-label="ShellRecipes home">
+          <span class="brand-mark">❯</span>shell<span class="brand-dot">.</span>recipes
+        </a>
+        <span class="header-spacer"></span>
+        <div class="header-actions">
+          <div class="os-switch" role="group" aria-label="Show commands for">
+            <button type="button" data-os="linux" aria-pressed="false">Linux</button>
+            <button type="button" data-os="macos" aria-pressed="false">macOS</button>
+            <button type="button" data-os="windows" aria-pressed="false">Windows</button>
+          </div>
+          <button class="icon-btn" type="button" id="theme-toggle" aria-label="Toggle dark mode">
+            <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+            <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>ShellRecipes: step-by-step terminal recipes for Linux, macOS and Windows.</span>
+        <span>
+          <a href={url('contribute/')}>Add a recipe</a> ·
+          <a href="https://github.com/AimxnAsyraf/shell-recipes">GitHub</a>
+        </span>
+      </div>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const root = document.documentElement;
+      const store = {
+        get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
+        set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+      };
+
+      // OS switch
+      const osButtons = document.querySelectorAll<HTMLButtonElement>('.os-switch button');
+      const syncOs = () => {
+        const os = root.dataset.os;
+        osButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.os === os)));
+        document.dispatchEvent(new CustomEvent('sr:os', { detail: os }));
+      };
+      osButtons.forEach((b) =>
+        b.addEventListener('click', () => {
+          root.dataset.os = b.dataset.os!;
+          store.set('sr:os', b.dataset.os!);
+          syncOs();
+        }),
+      );
+      syncOs();
+
+      // Theme toggle
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const current = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        const next = current === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        store.set('sr:theme', next);
+      });
+
+      // Copy buttons (copies the command with the current fill-in values)
+      const toast = document.getElementById('toast')!;
+      let toastTimer: number | undefined;
+      const showToast = (msg: string) => {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1600);
+      };
+      const copyText = async (text: string) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          ta.remove();
+          return ok;
+        }
+      };
+      document.addEventListener('click', async (e) => {
+        const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.copy');
+        if (!btn) return;
+        const code = btn.closest('.cmd')?.querySelector('code');
+        if (!code) return;
+        const ok = await copyText(code.textContent ?? '');
+        btn.textContent = ok ? 'Copied ✓' : 'Press Ctrl+C';
+        btn.classList.toggle('copied', ok);
+        showToast(ok ? 'Command copied' : 'Copy blocked by the browser');
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 1600);
+      });
+    </script>
+  </body>
+</html>

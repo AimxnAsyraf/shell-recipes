@@ -1,0 +1,21 @@
+{
+  "name": "shell-recipes",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Step-by-step terminal command recipes for Linux, macOS and Windows.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check:recipes": "node scripts/check-recipes.mjs"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.5",
+    "astro": "^7.4.5",
+    "unist-util-visit": "^5.2.0"
+  },
+  "engines": {
+    "node": ">=22.23.4"
+  }
+}

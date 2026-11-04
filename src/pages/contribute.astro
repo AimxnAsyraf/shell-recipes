@@ -1,0 +1,80 @@
+---
+import Base from '../layouts/Base.astro';
+
+const frontmatter = `---
+title: Connect your desktop to an Android emulator with adb
+summary: One or two sentences shown on the card and under the title.
+category: Mobile dev          # groups recipes into the filter chips
+tags: [android, adb, emulator]
+difficulty: Beginner          # Beginner | Intermediate | Advanced
+time: 15 min
+os: [linux, macos, windows]   # which OSes the recipe covers
+verified: 2026-11-04          # date you last checked the commands
+featured: true                # optional, sorts it first
+prerequisites:
+  - Android Studio installed
+variables:                    # optional fill-in values
+  - key: SERIAL               # use it as {{SERIAL}} inside code blocks
+    label: Emulator serial
+    default: emulator-5554
+    hint: From adb devices
+sources:                      # at least one official source
+  - title: Android Debug Bridge (adb)
+    url: https://developer.android.com/tools/adb
+    publisher: Android Developers
+    date: July 2026           # optional: date of the source itself
+---`;
+
+const body = [
+  'Short intro paragraph (shown above step 1).',
+  '',
+  '## Install the tool          <- every ## heading becomes a numbered step',
+  '',
+  '```bash linux,macos          <- language, then the OSes it applies to',
+  'adb -s {{SERIAL}} shell',
+  '```',
+  '',
+  '```powershell windows',
+  'adb -s {{SERIAL}} shell',
+  '```',
+  '',
+  '```bash                      <- no OS listed = same command everywhere',
+  'adb devices -l',
+  '```',
+  '',
+  '```output                    <- expected output (not copyable)',
+  '{{SERIAL}}  device product:...',
+  '```',
+  '',
+  '> **Tip:** blockquotes become highlighted notes.',
+  '',
+  '## Troubleshooting           <- "Troubleshooting", "Next steps", "Clean up",',
+  '                                "Going further" and "Undo" are not numbered',
+].join('\n');
+---
+
+<Base title="Add a recipe" description="How to add a new ShellRecipes recipe: one Markdown file per use case.">
+  <div class="prose">
+    <h1>Add a recipe</h1>
+    <p>
+      Each recipe is <strong>one Markdown file</strong> in <code>src/recipes/</code>. The file name becomes the URL,
+      so <code>connect-android-emulator.md</code> is served at <code>/r/connect-android-emulator/</code>. Commit the file
+      and the site rebuilds itself.
+    </p>
+
+    <h2>1. Frontmatter</h2>
+    <div class="cmd"><div class="cmd-head"><span class="cmd-os">src/recipes/your-recipe.md</span><span class="cmd-kind">YAML</span></div><pre><code>{frontmatter}</code></pre></div>
+
+    <h2>2. Steps and command blocks</h2>
+    <div class="cmd"><div class="cmd-head"><span class="cmd-os">Body</span><span class="cmd-kind">Markdown</span></div><pre><code>{body}</code></pre></div>
+
+    <h2>3. Rules of thumb</h2>
+    <ul>
+      <li>One action per step. Show the <em>expected output</em> so people know it worked.</li>
+      <li>Give every OS a command, or say clearly when a step doesn't apply. The page shows "Nothing to run on Windows" automatically.</li>
+      <li>Only use commands you checked against an official source, and list that source with a date.</li>
+      <li>Warn before anything destructive (<code>kill -9</code>, <code>rm</code>, <code>-wipe-data</code>).</li>
+      <li>Run <code>npm run check:recipes</code> before opening a pull request.</li>
+    </ul>
+  </div>
+</Base>
