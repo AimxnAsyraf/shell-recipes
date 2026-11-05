@@ -78,4 +78,4 @@ GitHub Actions (`.github/workflows/ci.yml`) only checks recipes and runs a test 
 
 ## License
 
-[MIT](LICENSE) © 2026 AimxnAsyraf. Contributions are published under the same license.
+[MIT](LICENSE) © 2026 Aiman Asyraf Zulkefli. Contributions are published under the same license.
