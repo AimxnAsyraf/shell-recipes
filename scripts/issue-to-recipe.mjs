@@ -109,6 +109,7 @@ export function buildRecipe(f, { author, date, issueTitle = '' }) {
   need('sources', 'Sources');
 
   const title = (f.title || '').replace(/^Recipe:\s*/i, '').trim();
+  if (/start with a verb, e\.g\./i.test(title)) errors.push('Replace the example text in the issue title with your own recipe title.');
   if (!CATEGORIES.includes(f.category)) errors.push(`Category "${f.category}" is not in the list.`);
   if (!DIFFICULTIES.includes(f.difficulty)) errors.push(`Difficulty "${f.difficulty}" is not valid.`);
 
