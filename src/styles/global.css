@@ -196,6 +196,9 @@ kbd {
 .card p { margin: 0; color: var(--muted); font-size: 0.94rem; flex: 1; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--faint); font-size: 0.8rem; font-family: var(--mono); }
 .card-progress { color: var(--accent); }
+.card-author { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85rem; }
+.card-author img { border-radius: 50%; border: 1px solid var(--border); background: var(--bg-soft); flex: none; }
+.card-author strong { color: var(--text); font-weight: 600; }
 .empty { border: 1px dashed var(--border-strong); border-radius: var(--radius); padding: 28px; text-align: center; color: var(--muted); }
 
 .how { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin-top: 56px; }
