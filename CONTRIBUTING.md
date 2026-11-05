@@ -67,10 +67,10 @@ sudo dnf install android-tools
 ```
 ````
 
-- Consecutive blocks are grouped. The visitor sees only the blocks for their selected OS.
+- Consecutive blocks are grouped. When a group has OS-specific blocks, its command header shows **Linux / macOS / Windows** tabs. Picking a tab switches every block on the page, so the visitor sees only their OS. Blocks with no OS listed show no tabs.
 - If a group has nothing for the selected OS, the page says *"Nothing to run on Windows for this part."*
 - `output` blocks are shown as **Expected output** and have no copy button. They can be OS-specific too (`output windows`).
-- `{{VAR}}` works in code blocks and in inline `` `code` ``.
+- `{{VAR}}` works in code blocks, inline `` `code` `` and plain text (not inside link URLs).
 
 ## Quality bar
 

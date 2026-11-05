@@ -139,16 +139,6 @@ kbd {
 .header-spacer { flex: 1; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
-.os-switch {
-  display: inline-flex; padding: 3px; gap: 2px;
-  background: var(--bg-soft); border: 1px solid var(--border); border-radius: 999px;
-}
-.os-switch button {
-  font: 600 0.8rem var(--sans); color: var(--muted);
-  border: 0; background: transparent; border-radius: 999px;
-  padding: 6px 12px; cursor: pointer; min-height: 32px;
-}
-.os-switch button[aria-pressed='true'] { background: var(--surface); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
 .icon-btn {
   display: inline-grid; place-items: center; width: 38px; height: 38px;
   border: 1px solid var(--border); border-radius: 999px; background: var(--bg-soft);
@@ -162,13 +152,6 @@ kbd {
   :root:not([data-theme='light']) .icon-btn .sun { display: block; }
   :root:not([data-theme='light']) .icon-btn .moon { display: none; }
 }
-@media (max-width: 520px) {
-  .site-header .wrap { gap: 8px; }
-  .header-spacer { display: none; }
-  .header-actions { width: 100%; justify-content: space-between; }
-  .os-switch button { padding: 6px 10px; }
-}
-
 /* ---------- Footer ---------- */
 .site-footer { border-top: 1px solid var(--border); margin-top: 72px; padding: 28px 0 40px; color: var(--muted); font-size: 0.9rem; }
 .site-footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
@@ -346,6 +329,7 @@ kbd {
   background: transparent; border: 1px solid var(--code-border); border-radius: 6px;
   padding: 5px 11px; cursor: pointer; min-height: 30px;
 }
+.copy { margin-left: auto; }
 .copy:hover { border-color: #6fdc8c; color: #6fdc8c; }
 .copy.copied { background: #6fdc8c; border-color: #6fdc8c; color: #0b1a10; }
 .cmd pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-size: 0.87rem; line-height: 1.6; color: var(--code-text); tab-size: 2; }
@@ -355,7 +339,8 @@ kbd {
   color: var(--var-text); background: var(--var-bg); border-radius: 4px; padding: 0 2px;
   box-shadow: inset 0 -1px 0 rgba(255, 207, 112, 0.5);
 }
-.cmd-inline .var { color: var(--amber); background: var(--amber-soft); border-radius: 3px; padding: 0 2px; }
+.var-text .var { font-weight: 600; }
+.cmd-inline .var, .var-text .var { color: var(--amber); background: var(--amber-soft); border-radius: 3px; padding: 0 2px; }
 .cmd-output { background: var(--output-bg); border-color: var(--border); }
 .cmd-output .cmd-head { background: transparent; border-bottom: 1px dashed var(--border); color: var(--faint); }
 .cmd-output .cmd-os { color: var(--muted); }
@@ -366,21 +351,31 @@ kbd {
 :root[data-os='linux'] .cmd:not([data-os~='linux']),
 :root[data-os='macos'] .cmd:not([data-os~='macos']),
 :root[data-os='windows'] .cmd:not([data-os~='windows']) { display: none; }
-.cmd-none { display: none; margin: 0; padding: 10px 14px; border: 1px dashed var(--border-strong); border-radius: 9px; color: var(--muted); font-size: 0.9rem; }
+.cmd-none { display: none; border-radius: 9px; overflow: hidden; border: 1px dashed var(--code-border); background: var(--code-bg); }
+.cmd-none p { margin: 0; padding: 12px 16px; color: var(--code-dim); font-size: 0.9rem; }
+.cmd-none strong { color: var(--code-text); }
 .cmd-none-os::after { content: var(--os-name); }
 :root[data-os='linux'] .cmd-group:not(:has(.cmd[data-os~='linux'])) .cmd-none,
 :root[data-os='macos'] .cmd-group:not(:has(.cmd[data-os~='macos'])) .cmd-none,
 :root[data-os='windows'] .cmd-group:not(:has(.cmd[data-os~='windows'])) .cmd-none { display: block; }
 
-.os-banner {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
-  padding: 10px 14px; border-radius: 9px; background: var(--accent-soft); color: var(--text); font-size: 0.9rem; margin: 0 0 8px;
+/* Per-block OS tabs */
+.os-tabs { display: inline-flex; gap: 2px; padding: 2px; border-radius: 7px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--code-border); }
+.os-tab {
+  font: 600 0.74rem var(--sans); color: var(--code-dim);
+  background: transparent; border: 0; border-radius: 5px;
+  padding: 5px 10px; min-height: 28px; cursor: pointer;
 }
-.os-banner strong { font-family: var(--mono); }
-.os-banner .shell::after { content: 'bash'; font-family: var(--mono); }
-:root[data-os='macos'] .os-banner .shell::after { content: 'Terminal (zsh)'; }
-:root[data-os='windows'] .os-banner .shell::after { content: 'Windows Terminal (PowerShell)'; }
-.os-banner .unsupported { display: none; color: var(--amber); font-weight: 600; }
+.os-tab:hover { color: var(--code-text); }
+.os-tab:focus-visible { outline: 2px solid #6fdc8c; outline-offset: 0; }
+:root[data-os='linux'] .os-tab[data-os='linux'],
+:root[data-os='macos'] .os-tab[data-os='macos'],
+:root[data-os='windows'] .os-tab[data-os='windows'] { background: #2a3037; color: #ffffff; box-shadow: inset 0 0 0 1px #3a424b; }
+.has-tabs .cmd-head { flex-wrap: wrap; row-gap: 4px; }
+@media (max-width: 420px) {
+  .os-tab { padding: 5px 8px; }
+  .has-tabs .cmd[data-kind='cmd'] .cmd-kind { display: none; }
+}
 
 .sources { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--border); }
 .sources h2 { font-size: 1.1rem; margin: 0 0 6px; }

@@ -115,10 +115,6 @@ const osNames = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
     </aside>
 
     <article class="recipe-body">
-      <p class="os-banner">
-        Showing commands for <strong id="os-name"></strong> <span aria-hidden="true">·</span> <span class="shell"></span>
-        <span class="unsupported" id="unsupported">This recipe doesn't cover this OS yet.</span>
-      </p>
       <Content />
 
       <section class="sources" aria-labelledby="sources-h">
@@ -146,7 +142,6 @@ const osNames = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
   const layout = document.querySelector<HTMLElement>('.recipe-layout')!;
   const id = layout.dataset.recipe!;
   const total = Number(layout.dataset.total);
-  const supported = (layout.dataset.supported ?? '').split(' ');
   const PKEY = `sr:progress:${id}`;
   const VKEY = `sr:vars:${id}`;
   const read = <T,>(k: string, fallback: T): T => {
@@ -164,16 +159,6 @@ const osNames = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
       /* storage unavailable */
     }
   };
-
-  // ----- OS banner -----
-  const osNames: Record<string, string> = { linux: 'Linux', macos: 'macOS', windows: 'Windows' };
-  const syncOs = () => {
-    const os = document.documentElement.dataset.os ?? 'linux';
-    document.getElementById('os-name')!.textContent = osNames[os];
-    document.getElementById('unsupported')!.style.display = supported.includes(os) ? 'none' : 'inline';
-  };
-  document.addEventListener('sr:os', syncOs);
-  syncOs();
 
   // ----- Step checklist -----
   const boxes = [...document.querySelectorAll<HTMLInputElement>('.step-done input')];
