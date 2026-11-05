@@ -1,0 +1,153 @@
+---
+import { allRecipes } from '../lib/recipes';
+import { url } from '../lib/url';
+
+const REPO = 'https://github.com/AimxnAsyraf/shell-recipes';
+const recipes = await allRecipes();
+const year = new Date().getFullYear();
+// GitHub mark from Simple Icons (simple-icons v16.36.0, icons/github.svg).
+const githubPath =
+  'M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12';
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <section class="cta" aria-labelledby="footer-cta-title">
+      <div class="cta-text">
+        <p class="cta-prompt" aria-hidden="true"><span>$</span> git commit -m "add my recipe"</p>
+        <h2 id="footer-cta-title">Know a workflow other people keep googling?</h2>
+        <p>Every recipe is one Markdown file. Add yours and it goes live on the next push.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href={url('contribute/')}>
+          Add a recipe
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </a>
+        <a class="btn btn-ghost" href={REPO}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={githubPath}></path></svg>
+          Star on GitHub
+        </a>
+      </div>
+    </section>
+
+    <div class="cols">
+      <div class="col-brand">
+        <a class="brand" href={url()} aria-label="ShellRecipes home"><span class="brand-mark">❯</span>shell<span class="brand-dot">.</span>recipes</a>
+        <p>Step-by-step terminal recipes for Linux, macOS and Windows. Every command is checked against official docs, with a date.</p>
+      </div>
+
+      <nav class="col" aria-labelledby="footer-recipes">
+        <h3 id="footer-recipes">Recipes</h3>
+        <ul>
+          {recipes.map((r) => <li><a href={url(`r/${r.id}/`)}>{r.data.title}</a></li>)}
+        </ul>
+      </nav>
+
+      <nav class="col" aria-labelledby="footer-project">
+        <h3 id="footer-project">Project</h3>
+        <ul>
+          <li><a href={url('contribute/')}>How to add a recipe</a></li>
+          <li><a href={`${REPO}/issues/new`}>Report an outdated command</a></li>
+          <li><a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Contributing guide</a></li>
+          <li><a href={REPO}>Source code</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="bottom">
+      <p>© {year} ShellRecipes · Built with Astro · Hosted on Cloudflare Pages</p>
+      <p class="shortcut">Press <kbd>/</kbd> on the home page to search</p>
+      <button class="to-top" type="button" id="to-top">
+        Back to top
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
+      </button>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('to-top')?.addEventListener('click', () => {
+    const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    document.querySelector<HTMLElement>('.brand')?.focus({ preventScroll: true });
+  });
+</script>
+
+<style>
+  .site-footer {
+    margin-top: 96px;
+    border-top: 1px solid var(--border);
+    background:
+      radial-gradient(700px 240px at 12% 0%, var(--accent-soft), transparent 70%),
+      var(--bg-soft);
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+  .site-footer .wrap { padding-top: 48px; padding-bottom: 28px; }
+
+  /* Call to action */
+  .cta {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px 32px;
+    padding: 28px; border-radius: 16px;
+    background: var(--code-bg); border: 1px solid var(--code-border);
+    color: var(--code-text);
+  }
+  .cta-text { max-width: 560px; }
+  .cta-prompt { margin: 0 0 10px; font: 0.82rem var(--mono); color: var(--code-dim); }
+  .cta-prompt span { color: #6fdc8c; }
+  .cta h2 { margin: 0 0 6px; font-size: clamp(1.25rem, 2.6vw, 1.6rem); line-height: 1.25; letter-spacing: -0.02em; color: #f2f1ec; }
+  .cta p:last-child { margin: 0; color: #b3b8be; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 18px; border-radius: 10px;
+    font: 600 0.92rem var(--sans); text-decoration: none; cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .btn-primary { background: #6fdc8c; color: #0b1a10; border: 1px solid #6fdc8c; }
+  .btn-primary:hover { background: #8ae6a2; border-color: #8ae6a2; }
+  .btn-ghost { background: transparent; color: #f2f1ec; border: 1px solid #3a424b; }
+  .btn-ghost:hover { border-color: #6fdc8c; color: #6fdc8c; }
+  .btn:focus-visible { outline: 2px solid #6fdc8c; outline-offset: 3px; }
+
+  /* Link columns */
+  .cols {
+    display: grid; gap: 32px; margin-top: 48px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @media (min-width: 720px) { .cols { grid-template-columns: 1.3fr 1fr 1fr; gap: 40px; } }
+  .col-brand p { margin: 12px 0 0; max-width: 36ch; line-height: 1.6; }
+  .col h3 {
+    margin: 0 0 12px; font: 600 0.75rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+  }
+  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .col a {
+    display: inline-flex; align-items: center; min-height: 36px;
+    color: var(--muted); text-decoration: none; transition: color 0.2s;
+  }
+  .col a:hover { color: var(--accent); }
+  .col a:focus-visible, .brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  /* Bottom bar */
+  .bottom {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px;
+    margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 0.84rem; color: var(--muted);
+  }
+  .bottom p { margin: 0; }
+  .shortcut { flex: 1; }
+  .to-top {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;
+    font: 600 0.84rem var(--sans); color: var(--muted); cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .to-top:hover { color: var(--accent); border-color: var(--accent); }
+  .to-top:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 560px) {
+    .cta { padding: 22px 18px; }
+    .cta-actions, .btn { width: 100%; }
+    .shortcut { display: none; }
+    .bottom { justify-content: space-between; }
+  }
+</style>
