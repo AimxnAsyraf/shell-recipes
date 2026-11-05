@@ -1,0 +1,35 @@
+name: Report an outdated or broken command
+description: A command in a recipe no longer works or the docs have changed.
+title: "Outdated: "
+labels: ["outdated-command"]
+body:
+  - type: input
+    id: recipe
+    attributes:
+      label: Recipe link
+      placeholder: https://shell-recipes.pages.dev/r/install-docker/
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - All
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Which step, the command you ran, and the output or error you got.
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested fix and source
+      description: The command that works now, and a link to the official docs that show it.

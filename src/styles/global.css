@@ -215,6 +215,9 @@ kbd {
   font-size: 0.8rem; font-weight: 600; color: var(--muted);
   background: var(--bg-soft); border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
 }
+.pill.author { text-decoration: none; color: var(--text); padding-left: 4px; transition: border-color 0.2s; }
+.pill.author:hover { border-color: var(--accent); }
+.pill.author img { border-radius: 50%; }
 .pill.ok { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
 
 .recipe-layout { display: grid; gap: 28px; margin-top: 28px; grid-template-columns: minmax(0, 1fr); }

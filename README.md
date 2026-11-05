@@ -46,9 +46,14 @@ npm run preview
 npm run check:recipes  # lint recipe files
 ```
 
-## Add a recipe
+## Contributing
 
-Each recipe is one Markdown file in [`src/recipes/`](src/recipes/). See [CONTRIBUTING.md](CONTRIBUTING.md), or the **Add a recipe** page on the site.
+Recipes are open for contributions, and the maintainer reviews every one before it's published:
+
+- **No Git needed:** fill in the [Submit a new recipe](https://github.com/AimxnAsyraf/shell-recipes/issues/new?template=new-recipe.yml) form. Once it's approved with the `approved` label, a GitHub Action turns it into a recipe file and opens a pull request.
+- **Git users:** add one Markdown file to `src/recipes/` and open a pull request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the format, the review steps and the maintainer setup.
 
 ## Deploy (Cloudflare Pages)
 
@@ -70,3 +75,7 @@ GitHub Actions (`.github/workflows/ci.yml`) only checks recipes and runs a test 
 ## Tech
 
 [Astro 7](https://astro.build) static site. Markdown goes through the unified/remark pipeline with two small plugins in [`src/plugins/`](src/plugins/): one turns code fences into OS-aware command blocks, the other turns `##` sections into numbered steps. There's no backend, and progress and values are stored in the visitor's browser (`localStorage`).
+
+## License
+
+[MIT](LICENSE) © 2026 Aiman Asyraf Zulkefli. Contributions are published under the same license.

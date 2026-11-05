@@ -1,0 +1,184 @@
+name: Submit a new recipe
+description: Propose a step-by-step terminal recipe. The maintainer reviews it before anything is published.
+title: "Recipe: "
+labels: ["recipe-proposal"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to **ShellRecipes**!
+
+        **How this works:** you fill in this form → the maintainer reviews it (and may ask questions here) → when it's approved, a bot turns it into a recipe file and opens a pull request → the maintainer merges it and it goes live. You'll be credited as **Contributed by @you**.
+
+        Only include commands you have **run yourself**, and link the **official docs** they come from.
+
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      description: Start with a verb and say what the reader will achieve.
+      placeholder: Connect your desktop to an Android emulator with adb
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences. Shown on the recipe card and under the title.
+      placeholder: Install adb, start an Android Virtual Device from the terminal, connect to it, and install an APK.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Pick the closest one. Need a new category? Say so in "Notes for the reviewer".
+      options:
+        - AI & LLMs
+        - Containers
+        - Databases
+        - Git & GitHub
+        - Mobile dev
+        - Networking
+        - Security
+        - System admin
+        - Web servers
+    validations:
+      required: true
+
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Comma-separated search keywords.
+      placeholder: android, adb, emulator, apk
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty
+      options:
+        - Beginner
+        - Intermediate
+        - Advanced
+    validations:
+      required: true
+
+  - type: input
+    id: time
+    attributes:
+      label: Time needed
+      placeholder: 15 min
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: os
+    attributes:
+      label: Operating systems covered
+      description: Tick every OS your steps include commands for (at least one).
+      options:
+        - label: Linux
+        - label: macOS
+        - label: Windows
+
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: Before you start
+      description: What the reader needs first. One item per line.
+      placeholder: |
+        Android Studio installed
+        At least one virtual device (AVD) created
+
+  - type: textarea
+    id: variables
+    attributes:
+      label: Fill-in values
+      description: |
+        Optional. Values the reader types once so every command updates. One per line as `KEY | Label | default | hint`.
+        KEY must be UPPER_SNAKE_CASE. Use it in commands as `{{KEY}}`.
+      placeholder: |
+        SERIAL | Emulator serial | emulator-5554 | From adb devices
+        PORT | Port number | 3000
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: Intro
+      description: Optional short paragraph shown above step 1.
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: |
+        Each step starts with `## Step title`. Put commands in code blocks: after the opening three backticks write the shell and the OSes it applies to (`bash linux,macos`, `powershell windows`). A block with no OS works everywhere. Use `output` for expected output. Edit the example below.
+      value: |
+        ## Install the tool
+
+        One line explaining why this step is needed.
+
+        ```bash linux,macos
+        echo "{{KEY}}"
+        ```
+
+        ```powershell windows
+        Write-Output "{{KEY}}"
+        ```
+
+        ```output
+        what the reader should see
+        ```
+
+        ## Check that it works
+
+        ```bash
+        tool --version
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting
+      description: "Optional. Common problems and fixes, e.g. `**Error message**: how to fix it.`"
+
+  - type: textarea
+    id: cleanup
+    attributes:
+      label: Clean up / undo
+      description: Optional. How to reverse what the recipe did. Code blocks work here too.
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Official docs your commands come from. One per line as `Title | https://url | Publisher | date (optional)`.
+      placeholder: |
+        Android Debug Bridge (adb) | https://developer.android.com/tools/adb | Android Developers | 2026-10-28
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for the reviewer
+      description: Optional. Anything the maintainer should know. Not published.
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Checklist
+      options:
+        - label: I ran these commands myself on the operating systems I ticked.
+          required: true
+        - label: The commands match the official sources I linked.
+          required: true
+        - label: There are no passwords, tokens, internal hostnames or personal data in this recipe.
+          required: true
+        - label: I agree that my contribution is published under the project's [MIT License](https://github.com/AimxnAsyraf/shell-recipes/blob/main/LICENSE).
+          required: true
