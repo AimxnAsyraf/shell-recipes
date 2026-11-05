@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { url } from '../lib/url';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
@@ -56,15 +57,7 @@ const fullTitle = title === 'ShellRecipes' ? title : `${title} · ShellRecipes`;
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="wrap">
-        <span>ShellRecipes: step-by-step terminal recipes for Linux, macOS and Windows.</span>
-        <span>
-          <a href={url('contribute/')}>Add a recipe</a> ·
-          <a href="https://github.com/AimxnAsyraf/shell-recipes">GitHub</a>
-        </span>
-      </div>
-    </footer>
+    <Footer />
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
