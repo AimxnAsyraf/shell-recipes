@@ -1,0 +1,102 @@
+name: Recipe from approved issue
+
+# When the maintainer adds the "approved" label to a "recipe-proposal" issue,
+# convert the form into src/recipes/<slug>.md and open a pull request for review.
+# Only people with triage/write access can add labels, so only they can trigger this.
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: recipe-from-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  open-pr:
+    if: github.event.label.name == 'approved' && contains(github.event.issue.labels.*.name, 'recipe-proposal')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ISSUE: ${{ github.event.issue.number }}
+      AUTHOR: ${{ github.event.issue.user.login }}
+      AUTHOR_ID: ${{ github.event.issue.user.id }}
+      BASE: ${{ github.event.repository.default_branch }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+
+      # The issue body is read from the event file, never interpolated into a shell command.
+      - name: Convert the issue into a recipe file
+        id: convert
+        run: node scripts/issue-to-recipe.mjs "$GITHUB_EVENT_PATH"
+
+      - name: Check recipes
+        run: npm run check:recipes
+
+      - name: Build the site
+        run: npm run build
+
+      - name: Open the pull request
+        env:
+          TITLE: ${{ steps.convert.outputs.title }}
+          FILE: ${{ steps.convert.outputs.file }}
+        run: |
+          branch="recipe/issue-$ISSUE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add "$FILE"
+          printf 'Add recipe: %s\n\nFrom #%s\n\nCo-authored-by: %s <%s+%s@users.noreply.github.com>\n' \
+            "$TITLE" "$ISSUE" "$AUTHOR" "$AUTHOR_ID" "$AUTHOR" > "$RUNNER_TEMP/msg"
+          git commit -F "$RUNNER_TEMP/msg"
+          git push --force -u origin "$branch"
+
+          printf '%s\n' \
+            "Adds \`$FILE\` from #$ISSUE, submitted by @$AUTHOR." \
+            "" \
+            "Closes #$ISSUE" \
+            "" \
+            "### Reviewer checklist" \
+            "- [ ] Commands match the linked official sources" \
+            "- [ ] Each OS has a working command, or says why a step doesn't apply" \
+            "- [ ] Destructive commands have a warning" \
+            "- [ ] No secrets, internal hostnames or personal data" \
+            "- [ ] Not a duplicate of an existing recipe" \
+            "- [ ] Checked the Cloudflare preview" \
+            "" \
+            "CI runs on bot-opened pull requests wait for approval: use **Approve workflows to run** in the merge box." \
+            > "$RUNNER_TEMP/body"
+
+          if url=$(gh pr view "$branch" --json url -q .url 2>/dev/null); then
+            note="Updated the existing pull request: $url"
+          else
+            url=$(gh pr create --base "$BASE" --head "$branch" --title "Add recipe: $TITLE" --body-file "$RUNNER_TEMP/body")
+            note="Opened a pull request for review: $url"
+          fi
+          gh issue comment "$ISSUE" --body "Thanks @$AUTHOR! $note — it will go live once it's merged."
+
+      - name: Report problems on the issue
+        if: failure()
+        env:
+          ERRORS: ${{ steps.convert.outputs.errors }}
+        run: |
+          if [ -n "$ERRORS" ]; then
+            printf '%s\n\n%s\n\n%s\n' \
+              "Thanks for the submission! It couldn't be turned into a recipe yet:" \
+              "$ERRORS" \
+              "Please edit the issue to fix these. The maintainer will re-apply the **approved** label." > "$RUNNER_TEMP/comment"
+          else
+            printf '%s\n' "The recipe was converted but failed the checks or the site build. See the run log: $RUN_URL" > "$RUNNER_TEMP/comment"
+          fi
+          gh issue comment "$ISSUE" --body-file "$RUNNER_TEMP/comment"
+          gh issue edit "$ISSUE" --remove-label approved

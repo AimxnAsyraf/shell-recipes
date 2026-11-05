@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import categories from './data/categories.json';
 
 const os = z.enum(['linux', 'macos', 'windows']);
 
@@ -9,7 +10,10 @@ const recipes = defineCollection({
   schema: z.object({
     title: z.string(),
     summary: z.string(),
-    category: z.string(),
+    // Fixed list in src/data/categories.json (also used by the submission form and checker).
+    category: z.enum(categories as [string, ...string[]]),
+    // GitHub username of the contributor, shown as "Contributed by @name".
+    author: z.string().regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/).optional(),
     tags: z.array(z.string()).default([]),
     difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
     time: z.string(),

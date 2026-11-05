@@ -46,9 +46,14 @@ npm run preview
 npm run check:recipes  # lint recipe files
 ```
 
-## Add a recipe
+## Contributing
 
-Each recipe is one Markdown file in [`src/recipes/`](src/recipes/). See [CONTRIBUTING.md](CONTRIBUTING.md), or the **Add a recipe** page on the site.
+Recipes are open for contributions, and the maintainer reviews every one before it's published:
+
+- **No Git needed:** fill in the [Submit a new recipe](https://github.com/AimxnAsyraf/shell-recipes/issues/new?template=new-recipe.yml) form. Once it's approved with the `approved` label, a GitHub Action turns it into a recipe file and opens a pull request.
+- **Git users:** add one Markdown file to `src/recipes/` and open a pull request.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the format, the review steps and the maintainer setup.
 
 ## Deploy (Cloudflare Pages)
 

@@ -1,20 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
+import categories from '../data/categories.json';
+
+const REPO = 'https://github.com/AimxnAsyraf/shell-recipes';
+const FORM = `${REPO}/issues/new?template=new-recipe.yml`;
 
 const frontmatter = `---
 title: Connect your desktop to an Android emulator with adb
 summary: One or two sentences shown on the card and under the title.
-category: Mobile dev          # groups recipes into the filter chips
+category: Mobile dev          # must be one of the categories listed above
 tags: [android, adb, emulator]
 difficulty: Beginner          # Beginner | Intermediate | Advanced
 time: 15 min
 os: [linux, macos, windows]   # which OSes the recipe covers
-verified: 2026-11-04          # date you last checked the commands
-featured: true                # optional, sorts it first
+verified: 2026-11-04          # the maintainer sets this when they check the commands
+author: your-github-username  # shown as "Contributed by @you"
 prerequisites:
   - Android Studio installed
 variables:                    # optional fill-in values
-  - key: SERIAL               # use it as {{SERIAL}} inside code blocks
+  - key: SERIAL               # use it as {{SERIAL}} in commands or text
     label: Emulator serial
     default: emulator-5554
     hint: From adb devices
@@ -30,7 +34,9 @@ const body = [
   '',
   '## Install the tool          <- every ## heading becomes a numbered step',
   '',
-  '```bash linux,macos          <- language, then the OSes it applies to',
+  'One line explaining why this step is needed.',
+  '',
+  '```bash linux,macos          <- shell, then the OSes it applies to',
   'adb -s {{SERIAL}} shell',
   '```',
   '',
@@ -46,35 +52,100 @@ const body = [
   '{{SERIAL}}  device product:...',
   '```',
   '',
-  '> **Tip:** blockquotes become highlighted notes.',
+  '> **Warning:** blockquotes become highlighted notes.',
   '',
-  '## Troubleshooting           <- "Troubleshooting", "Next steps", "Clean up",',
+  '## Troubleshooting           <- "Troubleshooting", "Clean up", "Next steps",',
   '                                "Going further" and "Undo" are not numbered',
 ].join('\n');
+
+const sections = [
+  ['Title', 'Starts with a verb: "Install…", "Connect…", "Find and kill…"'],
+  ['Summary', 'One or two sentences: what the reader will have at the end'],
+  ['Category', 'One from the fixed list below'],
+  ['Difficulty, time, OSes', 'Shown on the card and the recipe page'],
+  ['Before you start', 'What the reader needs first'],
+  ['Fill-in values', 'Optional: values the reader types once, like a port or device name'],
+  ['Steps', 'One action per step: why, commands per OS, expected output, warnings'],
+  ['Troubleshooting', 'Recommended: "symptom → fix" pairs'],
+  ['Clean up / undo', 'Recommended: how to reverse what the recipe did'],
+  ['Sources', 'Required: the official docs the commands come from'],
+];
 ---
 
-<Base title="Add a recipe" description="How to add a new ShellRecipes recipe: one Markdown file per use case.">
+<Base title="Add a recipe" description="How to submit a ShellRecipes recipe and how submissions are reviewed.">
   <div class="prose">
     <h1>Add a recipe</h1>
-    <p>
-      Each recipe is <strong>one Markdown file</strong> in <code>src/recipes/</code>. The file name becomes the URL,
-      so <code>connect-android-emulator.md</code> is served at <code>/r/connect-android-emulator/</code>. Commit the file
-      and the site rebuilds itself.
+    <p class="lead-p">
+      Know a terminal workflow people keep searching for? Submit it. Every submission is reviewed by the maintainer
+      before it's published, and you're credited on the recipe page.
     </p>
 
-    <h2>1. Frontmatter</h2>
-    <div class="cmd"><div class="cmd-head"><span class="cmd-os">src/recipes/your-recipe.md</span><span class="cmd-kind">YAML</span></div><pre><code>{frontmatter}</code></pre></div>
+    <div class="choices">
+      <a class="choice" href={FORM}>
+        <span class="choice-tag">Easiest</span>
+        <strong>Fill in the form</strong>
+        <span>A guided form on GitHub. No Git or file editing needed, just a free GitHub account.</span>
+        <span class="choice-go">Open the form →</span>
+      </a>
+      <a class="choice" href={`${REPO}/blob/main/CONTRIBUTING.md`}>
+        <span class="choice-tag">For Git users</span>
+        <strong>Open a pull request</strong>
+        <span>Add one Markdown file to <code>src/recipes/</code> using the format below.</span>
+        <span class="choice-go">Read the guide →</span>
+      </a>
+    </div>
 
-    <h2>2. Steps and command blocks</h2>
-    <div class="cmd"><div class="cmd-head"><span class="cmd-os">Body</span><span class="cmd-kind">Markdown</span></div><pre><code>{body}</code></pre></div>
+    <h2>What happens after you submit</h2>
+    <ol class="flow">
+      <li><strong>You submit</strong> the form (or a pull request).</li>
+      <li><strong>The maintainer reviews it</strong> and may ask questions on GitHub. Nothing is published yet.</li>
+      <li><strong>Approved:</strong> a bot turns the form into a recipe file and opens a pull request. Automatic checks validate it, and a preview link is posted.</li>
+      <li><strong>Merged:</strong> the site rebuilds and your recipe goes live with <em>Contributed by @you</em>.</li>
+    </ol>
 
-    <h2>3. Rules of thumb</h2>
+    <h2>What a recipe contains</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Section</th><th>What goes in it</th></tr></thead>
+        <tbody>{sections.map(([k, v]) => <tr><td><strong>{k}</strong></td><td>{v}</td></tr>)}</tbody>
+      </table>
+    </div>
+    <p><strong>Categories:</strong> {categories.join(' · ')}. Need a new one? Ask in your submission.</p>
+
+    <h2>Quality bar</h2>
     <ul>
-      <li>One action per step. Show the <em>expected output</em> so people know it worked.</li>
-      <li>Give every OS a command, or say clearly when a step doesn't apply. The page shows "Nothing to run on Windows" automatically.</li>
-      <li>Only use commands you checked against an official source, and list that source with a date.</li>
-      <li>Warn before anything destructive (<code>kill -9</code>, <code>rm</code>, <code>-wipe-data</code>).</li>
-      <li>Run <code>npm run check:recipes</code> before opening a pull request.</li>
+      <li>Only commands you've <strong>run yourself</strong>, matching the <strong>official docs</strong> you link.</li>
+      <li>Give each OS a working command, or say clearly why a step doesn't apply.</li>
+      <li>Show the expected output when success isn't obvious.</li>
+      <li>Warn before anything destructive (<code>kill -9</code>, <code>rm -rf</code>, <code>-wipe-data</code>).</li>
+      <li>No passwords, tokens, internal hostnames or personal data.</li>
+      <li>No raw HTML. Links must be <code>https://</code>.</li>
     </ul>
+
+    <h2>File format (pull requests)</h2>
+    <p>Copy <code>docs/recipe-template.md</code>, then run <code>npm run check:recipes</code> and <code>npm run build</code> before opening the pull request.</p>
+    <div class="cmd"><div class="cmd-head"><span class="cmd-os">src/recipes/your-recipe.md</span><span class="cmd-kind">YAML frontmatter</span></div><pre><code>{frontmatter}</code></pre></div>
+    <div class="cmd" style="margin-top:12px"><div class="cmd-head"><span class="cmd-os">Body</span><span class="cmd-kind">Markdown</span></div><pre><code>{body}</code></pre></div>
   </div>
 </Base>
+
+<style>
+  .lead-p { font-size: 1.08rem; color: var(--muted); }
+  .choices { display: grid; gap: 14px; margin: 24px 0 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+  .choice {
+    display: flex; flex-direction: column; gap: 6px; padding: 20px; border-radius: var(--radius);
+    background: var(--surface); border: 1px solid var(--border); color: var(--muted); text-decoration: none;
+    box-shadow: var(--shadow); transition: border-color 0.2s;
+  }
+  .choice:hover { border-color: var(--accent); }
+  .choice strong { color: var(--text); font-size: 1.1rem; }
+  .choice-tag { font: 600 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.07em; color: var(--amber); }
+  .choice-go { margin-top: auto; padding-top: 6px; color: var(--accent); font-weight: 600; }
+  .flow { padding-left: 1.3em; }
+  .flow li { margin: 8px 0; color: var(--muted); }
+  .flow strong { color: var(--text); }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-soft); }
+</style>

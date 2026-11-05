@@ -1,0 +1,4 @@
+# Every change needs the maintainer's review (enforced once "Require review from
+# Code Owners" is turned on in the branch protection rule / ruleset for main).
+*            @AimxnAsyraf
+/.github/    @AimxnAsyraf
