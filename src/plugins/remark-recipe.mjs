@@ -8,8 +8,9 @@
 //   ```output linux            -> "expected output" block (not copyable)
 //   ```bash linux title="Fedora / RHEL"   -> optional label shown in the block header
 //
-// Consecutive code blocks are grouped; the page's OS switch shows only the blocks
-// for the selected OS. Write {{VAR_NAME}} inside a block to make it a fill-in variable
+// Consecutive code blocks are grouped. When a group has OS-specific blocks, each command
+// header gets Linux / macOS / Windows tabs; picking a tab switches every block on the page
+// (and is remembered), so only the blocks for that OS are shown. Write {{VAR_NAME}} inside a block to make it a fill-in variable
 // (declared in the recipe's `variables` frontmatter).
 
 const OSES = ['linux', 'macos', 'windows'];
@@ -53,17 +54,21 @@ function renderCode(value, lang, defaults) {
   return lines.join('\n');
 }
 
-function renderBlock(node, defaults) {
+const OS_TABS =
+  '<div class="os-tabs" role="group" aria-label="Show command for">' +
+  OSES.map((o) => `<button type="button" class="os-tab" data-os="${o}">${OS_NAMES[o]}</button>`).join('') +
+  '</div>';
+
+function renderBlock(node, defaults, withTabs) {
   const lang = (node.lang || 'bash').toLowerCase();
   const { title, os } = parseMeta(node.meta || '');
   const isOutput = lang === 'output';
   const osLabel = os.length === OSES.length ? 'All systems' : os.map((o) => OS_NAMES[o]).join(' · ');
   const kindLabel = isOutput ? 'Expected output' : SHELL_NAMES[lang] || lang;
-  const head = [
-    `<span class="cmd-os">${escapeHtml(title || osLabel)}</span>`,
-    `<span class="cmd-kind">${escapeHtml(kindLabel)}</span>`,
-    isOutput ? '' : '<button class="copy" type="button" aria-label="Copy command">Copy</button>',
-  ].join('');
+  // Command blocks in a group with OS-specific variants get Linux/macOS/Windows tabs.
+  const label = !isOutput && withTabs ? OS_TABS : `<span class="cmd-os">${escapeHtml(title || osLabel)}</span>`;
+  const kind = `<span class="cmd-kind">${escapeHtml(!isOutput && withTabs && title ? `${title} · ${kindLabel}` : kindLabel)}</span>`;
+  const head = [label, kind, isOutput ? '' : '<button class="copy" type="button" aria-label="Copy command">Copy</button>'].join('');
   return (
     `<div class="cmd${isOutput ? ' cmd-output' : ''}" data-os="${os.join(' ')}" data-kind="${isOutput ? 'output' : 'cmd'}">` +
     `<div class="cmd-head">${head}</div>` +
@@ -78,11 +83,15 @@ function transformChildren(parent, defaults) {
   let group = [];
   const flush = () => {
     if (!group.length) return;
+    const withTabs = group.some((n) => parseMeta(n.meta || '').os.length < OSES.length);
     out.push({
       type: 'html',
       value:
-        `<div class="cmd-group">${group.map((n) => renderBlock(n, defaults)).join('')}` +
-        `<p class="cmd-none">Nothing to run on <strong class="cmd-none-os"></strong> for this part.</p></div>`,
+        `<div class="cmd-group${withTabs ? ' has-tabs' : ''}">${group.map((n) => renderBlock(n, defaults, withTabs)).join('')}` +
+        (withTabs
+          ? `<div class="cmd-none"><div class="cmd-head">${OS_TABS}</div><p>Nothing to run on <strong class="cmd-none-os"></strong> for this part.</p></div>`
+          : '') +
+        `</div>`,
     });
     group = [];
   };
@@ -92,6 +101,11 @@ function transformChildren(parent, defaults) {
       continue;
     }
     flush();
+    // Plain text can use {{VAR}} too.
+    if (child.type === 'text' && /\{\{[A-Z][A-Z0-9_]*\}\}/.test(child.value)) {
+      out.push({ type: 'html', value: `<span class="var-text">${renderCode(child.value, 'output', defaults)}</span>` });
+      continue;
+    }
     // Inline `code` can use {{VAR}} too.
     if (child.type === 'inlineCode' && /\{\{[A-Z][A-Z0-9_]*\}\}/.test(child.value)) {
       out.push({ type: 'html', value: `<code class="cmd-inline">${renderCode(child.value, 'text', defaults)}</code>` });

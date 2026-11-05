@@ -8,7 +8,7 @@ Pick a use case, such as *"connect my desktop to an Android emulator"*, choose y
 
 ## Features
 
-- **OS switch.** One click changes every command on the page between Linux, macOS and Windows. It auto-detects your OS on the first visit.
+- **OS tabs on every command.** Pick Linux, macOS or Windows on any command block and the whole page follows. Your OS is detected on the first visit and remembered.
 - **Fill-in variables.** Type your port, IP, device serial or email once, and every command updates.
 - **Copy buttons.** Copy each command with your values already filled in.
 - **Step checklist.** Tick off steps as you go. Progress is saved in your browser and shown on the home page.

@@ -140,7 +140,7 @@ CONTAINER ID   IMAGE   COMMAND                  STATUS         PORTS            
 3f2a1b9c8d7e   nginx   "/docker-entrypoint.…"   Up 3 seconds   0.0.0.0:{{HOST_PORT}}->80/tcp   {{NAME}}
 ```
 
-Open **http://localhost:{{HOST_PORT}}** in your browser, or check from the terminal:
+Open `http://localhost:{{HOST_PORT}}` in your browser, or check from the terminal:
 
 ```bash linux,macos
 curl -I http://localhost:{{HOST_PORT}}
