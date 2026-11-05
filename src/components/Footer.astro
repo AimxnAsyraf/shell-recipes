@@ -55,7 +55,7 @@ const githubPath =
     </div>
 
     <div class="bottom">
-      <p>© {year} ShellRecipes · Built with Astro · Hosted on Cloudflare Pages</p>
+      <p>© {year} ShellRecipes · <a href={`${REPO}/blob/main/LICENSE`}>MIT License</a> · Built with Astro · Hosted on Cloudflare Pages</p>
       <p class="shortcut">Press <kbd>/</kbd> on the home page to search</p>
       <button class="to-top" type="button" id="to-top">
         Back to top
@@ -135,6 +135,8 @@ const githubPath =
     font-size: 0.84rem; color: var(--muted);
   }
   .bottom p { margin: 0; }
+  .bottom a { color: inherit; text-underline-offset: 2px; }
+  .bottom a:hover { color: var(--accent); }
   .shortcut { flex: 1; }
   .to-top {
     display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px;

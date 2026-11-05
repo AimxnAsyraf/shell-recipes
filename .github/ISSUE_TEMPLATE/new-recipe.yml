@@ -180,3 +180,5 @@ body:
           required: true
         - label: There are no passwords, tokens, internal hostnames or personal data in this recipe.
           required: true
+        - label: I agree that my contribution is published under the project's [MIT License](https://github.com/AimxnAsyraf/shell-recipes/blob/main/LICENSE).
+          required: true

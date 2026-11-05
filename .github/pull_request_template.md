@@ -11,5 +11,6 @@
 - [ ] No passwords, tokens, internal hostnames or personal data
 - [ ] Not a duplicate of an existing recipe
 - [ ] Category is from `src/data/categories.json`
+- [ ] I agree that my contribution is published under the project's [MIT License](https://github.com/AimxnAsyraf/shell-recipes/blob/main/LICENSE)
 
 Maintainer sets `verified:` to the date they checked the commands.

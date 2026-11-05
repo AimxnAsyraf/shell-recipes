@@ -1,6 +1,6 @@
 # Contributing a recipe
 
-Every recipe is reviewed by the maintainer before it's published. There are two ways to submit one.
+Every recipe is reviewed by the maintainer before it's published. There are two ways to submit one. By contributing, you agree that your contribution is published under the project's [MIT License](LICENSE).
 
 ## Option 1: fill in the form (no Git needed)
 

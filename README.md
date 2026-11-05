@@ -75,3 +75,7 @@ GitHub Actions (`.github/workflows/ci.yml`) only checks recipes and runs a test 
 ## Tech
 
 [Astro 7](https://astro.build) static site. Markdown goes through the unified/remark pipeline with two small plugins in [`src/plugins/`](src/plugins/): one turns code fences into OS-aware command blocks, the other turns `##` sections into numbered steps. There's no backend, and progress and values are stored in the visitor's browser (`localStorage`).
+
+## License
+
+[MIT](LICENSE) © 2026 AimxnAsyraf. Contributions are published under the same license.
