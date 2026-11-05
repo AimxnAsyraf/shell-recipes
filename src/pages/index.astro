@@ -45,12 +45,18 @@ const osShort = { linux: 'Linux', macos: 'macOS', windows: 'Windows' } as const;
     {
       recipes.map((r) => {
         const steps = stepCount(r);
-        const haystack = [r.data.title, r.data.summary, r.data.category, ...r.data.tags].join(' ').toLowerCase();
+        const haystack = [r.data.title, r.data.summary, r.data.category, ...r.data.tags, r.data.author ?? ''].join(' ').toLowerCase();
         return (
           <a class="card" href={url(`r/${r.id}/`)} data-cat={r.data.category} data-text={haystack} data-id={r.id} data-steps={steps}>
             <span class="card-cat">{r.data.category}</span>
             <h2>{r.data.title}</h2>
             <p>{r.data.summary}</p>
+            {r.data.author && (
+              <span class="card-author">
+                <img src={`https://github.com/${r.data.author}.png?size=40`} alt="" width="20" height="20" loading="lazy" />
+                <span>Contributed by <strong>@{r.data.author}</strong></span>
+              </span>
+            )}
             <span class="card-meta">
               <span>{steps} steps</span>
               <span>{r.data.time}</span>
