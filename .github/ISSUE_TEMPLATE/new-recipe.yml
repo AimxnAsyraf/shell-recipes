@@ -1,6 +1,5 @@
 name: Submit a new recipe
 description: Propose a step-by-step terminal recipe. The maintainer reviews it before anything is published.
-title: "Recipe: "
 labels: ["recipe-proposal"]
 body:
   - type: markdown
@@ -12,14 +11,7 @@ body:
 
         Only include commands you have **run yourself**, and link the **official docs** they come from.
 
-  - type: input
-    id: title
-    attributes:
-      label: Title
-      description: Start with a verb and say what the reader will achieve.
-      placeholder: Connect your desktop to an Android emulator with adb
-    validations:
-      required: true
+        **The issue title above is the recipe title.** Start with a verb and say what the reader will achieve, e.g. *Install Hermes and run your first agent*.
 
   - type: textarea
     id: summary

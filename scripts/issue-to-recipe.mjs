@@ -2,7 +2,10 @@
 //
 // Usage:
 //   node scripts/issue-to-recipe.mjs <github-event.json>          (in GitHub Actions: $GITHUB_EVENT_PATH)
-//   node scripts/issue-to-recipe.mjs --body <file> --author <login> [--issue <n>] [--date YYYY-MM-DD]
+//   node scripts/issue-to-recipe.mjs --body <file> --title <text> --author <login> [--issue <n>] [--date YYYY-MM-DD]
+//
+// The recipe title is the issue title (a "Recipe:" prefix is removed). Issues made with the
+// older form, which had its own "Title" field, still use that field.
 //
 // Everything in the issue is untrusted input: values are quoted as YAML strings, and raw HTML in
 // prose is escaped so a submission can't inject markup or scripts into the site.
@@ -17,7 +20,7 @@ const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];
 
 // Form labels (must match .github/ISSUE_TEMPLATE/new-recipe.yml) -> field ids.
 const FIELDS = {
-  Title: 'title',
+  Title: 'title', // old forms only: the recipe title now comes from the issue title
   Summary: 'summary',
   Category: 'category',
   Tags: 'tags',
@@ -93,12 +96,13 @@ export function slugify(title) {
   );
 }
 
-export function buildRecipe(f, { author, date }) {
+export function buildRecipe(f, { author, date, issueTitle = '' }) {
+  if (!f.title) f.title = issueTitle;
   const errors = [];
   const need = (k, label) => {
     if (!f[k]) errors.push(`"${label}" is empty.`);
   };
-  need('title', 'Title');
+  need('title', 'Title (the issue title)');
   need('summary', 'Summary');
   need('time', 'Time needed');
   need('steps', 'Steps');
@@ -196,22 +200,24 @@ export function buildRecipe(f, { author, date }) {
 const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   const args = process.argv.slice(2);
-  let body, author, issue;
+  let body, author, issue, issueTitle;
   let date = new Date().toISOString().slice(0, 10);
   if (args[0] && !args[0].startsWith('--')) {
     const ev = JSON.parse(readFileSync(args[0], 'utf8'));
     body = ev.issue.body || '';
+    issueTitle = ev.issue.title || '';
     author = ev.issue.user.login;
     issue = ev.issue.number;
   } else {
     for (let i = 0; i < args.length; i += 2) {
       if (args[i] === '--body') body = readFileSync(args[i + 1], 'utf8');
       if (args[i] === '--author') author = args[i + 1];
+      if (args[i] === '--title') issueTitle = args[i + 1];
       if (args[i] === '--issue') issue = args[i + 1];
       if (args[i] === '--date') date = args[i + 1];
     }
   }
-  const result = buildRecipe(parseIssueBody(body), { author, date });
+  const result = buildRecipe(parseIssueBody(body), { author, date, issueTitle });
   // Random heredoc delimiters so submitted text can't end a GITHUB_OUTPUT value early.
   const delim = () => `EOF_${randomBytes(12).toString('hex')}`;
   if (result.errors) {
